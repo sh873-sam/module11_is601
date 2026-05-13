@@ -2,18 +2,16 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     services:
-      db:
+      postgres:
         image: postgres:16
         env:
           POSTGRES_USER: postgres
@@ -28,7 +26,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/module11_db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/module11_db
 
     steps:
       - name: Checkout code
@@ -51,7 +49,6 @@ jobs:
   security:
     runs-on: ubuntu-latest
     needs: test
-
     steps:
       - name: Security placeholder
         run: echo "Security checks passed"
@@ -59,7 +56,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: security
-
     steps:
       - name: Deploy placeholder
         run: echo "Deploy step completed"
