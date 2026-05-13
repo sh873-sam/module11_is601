@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: module11_fastapi_calculator
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/module11_db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - module11-network
+
+  db:
+    image: postgres:16
+    container_name: module11_postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: module11_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - module11_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - module11-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: module11_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - module11-network
+
+volumes:
+  module11_postgres_data:
+
+networks:
+  module11-network:
+    driver: bridge
